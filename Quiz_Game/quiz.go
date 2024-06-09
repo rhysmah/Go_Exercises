@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+type UserResponse struct {
+	TotalQuestions   int
+	CorrectAnswers   int
+	IncorrectAnswers int
+	Percentage       float64
+}
+
 // processQuestionsAndAnswers reads a CSV file containing questions and answers
 // and returns a map where keys are questions, values are answers.
 //
