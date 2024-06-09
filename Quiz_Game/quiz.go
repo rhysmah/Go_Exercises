@@ -17,7 +17,8 @@ type User struct {
 	Percentage       float64
 }
 
-// Pass in a pointer because we're modifying the struct
+// calculatePercentage calculates the percentage of correct answers for the user.
+// If TotalQuestions is zero, the Percentage is set to 0.0 to avoid division by zero.
 func (u *User) calculatePercentage() {
 	if u.TotalQuestions <= 0 {
 		u.Percentage = 0.0
@@ -26,6 +27,7 @@ func (u *User) calculatePercentage() {
 	}
 }
 
+// printResults displays the user's quiz results.
 func (u *User) printResults() {
 
 	fmt.Println("********************")
