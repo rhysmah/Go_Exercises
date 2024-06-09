@@ -2,3 +2,4 @@ vendor/
 *.exe
 *.log
 *.out
+.DS_Store
