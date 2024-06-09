@@ -2,4 +2,13 @@ vendor/
 *.exe
 *.log
 *.out
+
+# Ignore all executables
+*.exe
+*.out
+*.dylib
+*.so
+*.a
+
+# Ignore Mac OS X system files
 .DS_Store
