@@ -118,7 +118,7 @@ func runQuiz(quizQA map[string]string) {
 		fmt.Print("Your answer: ")
 		fmt.Scanln(&userAnswer)
 
-		if userAnswer == answer {
+		if strings.TrimSpace(userAnswer) == answer {
 			fmt.Println("Correct!")
 			userResponse.CorrectAnswers++
 		} else {
