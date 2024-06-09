@@ -39,9 +39,6 @@ func (u *User) printResults() {
 // processQuestionsAndAnswers reads a CSV file containing questions and answers
 // and returns a map where keys are questions, values are answers.
 //
-// The CSV file is expected to have each question-answer pair in a separate row,
-// with the question in the first column and the answer in the second column.
-//
 // Parameters:
 // - filename: A string representing the path to the CSV file to be read.
 //
@@ -67,11 +64,6 @@ func processQuestionsAndAnswers(filename string) (map[string]string, error) {
 }
 
 // parseCSVFile reads a CSV file and populates a provided map with questions and answers.
-//
-// This function reads each record from the given CSV file and stores it in the provided map.
-// The first column of each record is treated as the question, and the second column is treated
-// as the answer. Both the question and answer are trimmed of leading and trailing whitespace
-// before being stored in the map.
 //
 // Parameters:
 // - file: A pointer to an os.File representing the open CSV file to be read.
