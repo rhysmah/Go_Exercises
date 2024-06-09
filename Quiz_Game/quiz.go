@@ -21,19 +21,20 @@ type User struct {
 func (u *User) calculatePercentage() {
 	if u.TotalQuestions <= 0 {
 		u.Percentage = 0.0
+	} else {
+		u.Percentage = float64(u.CorrectAnswers) / float64(u.TotalQuestions) * 100
 	}
-	u.Percentage = float64(u.CorrectAnswers/u.TotalQuestions) * 100
 }
 
 func (u *User) printResults() {
 
-	fmt.Println("*****************************")
+	fmt.Println("********************")
 	fmt.Println("Username: ", u.UserName)
-	fmt.Println("*****************************")
-	fmt.Println("# Questions: ", u.TotalQuestions)
-	fmt.Println("Correct: ", u.CorrectAnswers)
-	fmt.Println("Incorrect: ", u.IncorrectAnswers)
-	fmt.Println("Percentage: ", u.Percentage)
+	fmt.Println("********************")
+	fmt.Println("Questions:\t", u.TotalQuestions)
+	fmt.Println("Correct:\t", u.CorrectAnswers)
+	fmt.Println("Incorrect:\t", u.IncorrectAnswers)
+	fmt.Printf("Percentage:\t %.1f%%\n", u.Percentage)
 }
 
 // processQuestionsAndAnswers reads a CSV file containing questions and answers
@@ -107,10 +108,14 @@ func runQuiz(quizQA map[string]string) {
 	fmt.Print("Please enter your name: ")
 	fmt.Scanln(&userResponse.UserName)
 
+	questionNumber := 1
 	for question, answer := range quizQA {
-		fmt.Println(question)
+		fmt.Println()
+		fmt.Printf("Question %d: %s\n", questionNumber, question)
+		questionNumber++
 
 		var userAnswer string
+		fmt.Print("Your answer: ")
 		fmt.Scanln(&userAnswer)
 
 		if userAnswer == answer {
@@ -120,10 +125,10 @@ func runQuiz(quizQA map[string]string) {
 			fmt.Println("Incorrect!")
 			userResponse.IncorrectAnswers++
 		}
+		fmt.Println()
 	}
 	userResponse.calculatePercentage()
 	userResponse.printResults()
-
 }
 
 func main() {
