@@ -9,11 +9,31 @@ import (
 	"strings"
 )
 
-type UserResponse struct {
+type User struct {
+	UserName         string
 	TotalQuestions   int
 	CorrectAnswers   int
 	IncorrectAnswers int
 	Percentage       float64
+}
+
+// Pass in a pointer because we're modifying the struct
+func (u *User) calculatePercentage() {
+	if u.TotalQuestions <= 0 {
+		u.Percentage = 0.0
+	}
+	u.Percentage = float64(u.CorrectAnswers/u.TotalQuestions) * 100
+}
+
+func (u *User) printResults() {
+
+	fmt.Println("*****************************")
+	fmt.Println("Username: ", u.UserName)
+	fmt.Println("*****************************")
+	fmt.Println("# Questions: ", u.TotalQuestions)
+	fmt.Println("Correct: ", u.CorrectAnswers)
+	fmt.Println("Incorrect: ", u.IncorrectAnswers)
+	fmt.Println("Percentage: ", u.Percentage)
 }
 
 // processQuestionsAndAnswers reads a CSV file containing questions and answers
@@ -72,7 +92,6 @@ func parseCSVFile(file *os.File, quizQA map[string]string) error {
 		record, err := r.Read()
 
 		if err == io.EOF {
-			log.Print("Reached end of file")
 			break
 		}
 		if err != nil {
@@ -88,11 +107,41 @@ func parseCSVFile(file *os.File, quizQA map[string]string) error {
 	return nil
 }
 
+func runQuiz(quizQA map[string]string) {
+	var userResponse User
+
+	userResponse.TotalQuestions = len(quizQA)
+
+	fmt.Print("Please enter your name: ")
+	fmt.Scanln(&userResponse.UserName)
+
+	for question, answer := range quizQA {
+		fmt.Println(question)
+
+		var userAnswer string
+		fmt.Scanln(&userAnswer)
+
+		if userAnswer == answer {
+			fmt.Println("Correct!")
+			userResponse.CorrectAnswers++
+		} else {
+			fmt.Println("Incorrect!")
+			userResponse.IncorrectAnswers++
+		}
+	}
+	userResponse.calculatePercentage()
+	userResponse.printResults()
+
+}
+
 func main() {
 
-	questionsAndAnswers, err := processQuestionsAndAnswers("questions.csv")
+	quizQA, err := processQuestionsAndAnswers("questions.csv")
 	if err != nil {
-		log.Fatalf("Error processing questions and answers: %v", err)
+		log.Fatal("Error processing questions and answers: ", err)
 	}
-	fmt.Println(questionsAndAnswers)
+	if len(quizQA) <= 0 {
+		log.Fatal("No questions found in the quiz. Exiting...")
+	}
+	runQuiz(quizQA)
 }
