@@ -111,6 +111,8 @@ func main() {
 	fmt.Println("Press ENTER to start.")
 	fmt.Scanln()
 
+	// Auotmatically creates a new goroutine to run the quiz
+	// When the time expires, a signal is sent to the channel
 	timer := time.NewTimer(30 * time.Second)
 
 	quiz := Quiz{Questions: quizData}
