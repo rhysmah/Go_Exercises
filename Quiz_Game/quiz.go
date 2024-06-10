@@ -47,7 +47,9 @@ func (q *Quiz) run() {
 			q.CorrectAnswers++
 		}
 	}
-	fmt.Printf("You answered %d out of %d questions correctly.\n", q.CorrectAnswers, q.TotalQuestions)
+	fmt.Printf("You answered %d out of %d questions correctly.\n",
+		q.CorrectAnswers,
+		q.TotalQuestions)
 }
 
 // processQuizData reads the quiz data from a CSV file.
