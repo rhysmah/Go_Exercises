@@ -3,144 +3,93 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
 )
 
-type User struct {
-	UserName         string
-	TotalQuestions   int
-	CorrectAnswers   int
-	IncorrectAnswers int
-	Percentage       float64
+type Quiz struct {
+	UserAnswer     string
+	TotalQuestions int
+	QuestionNumber int
+	CorrectAnswers int
+	Questions      map[string]string
 }
 
-// calculatePercentage calculates the percentage of correct answers for the user.
-// If TotalQuestions is zero, the Percentage is set to 0.0 to avoid division by zero.
-func (u *User) calculatePercentage() {
-	if u.TotalQuestions <= 0 {
-		u.Percentage = 0.0
-	} else {
-		u.Percentage = float64(u.CorrectAnswers) / float64(u.TotalQuestions) * 100
+// checkAnswer compares the user's answer with the correct answer.
+func (q *Quiz) checkAnswer(question string, answer string) (bool, string) {
+	if strings.TrimSpace(strings.ToLower(answer)) == question {
+		return true, "Correct!"
 	}
+	return false, "Incorrect!"
 }
 
-// printResults displays the user's quiz results.
-func (u *User) printResults() {
+// run executes the quiz, asking each question and checking answers.
+func (q *Quiz) run() {
+	if len(q.Questions) == 0 {
+		fmt.Println("No questions found in quiz data.")
+		return
+	}
 
-	fmt.Println("********************")
-	fmt.Println("Username: ", u.UserName)
-	fmt.Println("********************")
-	fmt.Println("Questions:\t", u.TotalQuestions)
-	fmt.Println("Correct:\t", u.CorrectAnswers)
-	fmt.Println("Incorrect:\t", u.IncorrectAnswers)
-	fmt.Printf("Percentage:\t %.1f%%\n", u.Percentage)
+	q.TotalQuestions = len(q.Questions)
+	q.QuestionNumber = 1
+
+	for question, answer := range q.Questions {
+		fmt.Printf("Question %d: %s\n", q.QuestionNumber, question)
+		q.QuestionNumber++
+
+		fmt.Print("Your answer: ")
+		fmt.Scanln(&q.UserAnswer)
+
+		isCorrect, response := q.checkAnswer(answer, q.UserAnswer)
+		fmt.Printf("%s\n\n", response)
+		if isCorrect {
+			q.CorrectAnswers++
+		}
+	}
+	fmt.Printf("You answered %d out of %d questions correctly.\n", q.CorrectAnswers, q.TotalQuestions)
 }
 
-// processQuestionsAndAnswers reads a CSV file containing questions and answers
-// and returns a map where keys are questions, values are answers.
-//
-// Parameters:
-// - filename: A string representing the path to the CSV file to be read.
-//
-// Returns:
-// - A map[string]string where each key is a question, each value the answer
-// - An error if there was any issue opening the file or parsing its contents.
-func processQuestionsAndAnswers(filename string) (map[string]string, error) {
-	questionsAndAnswers := make(map[string]string)
-
-	// Open the file
+// processQuizData reads the quiz data from a CSV file.
+func processQuizData(filename string) (map[string]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	parseError := parseCSVFile(file, questionsAndAnswers)
-	if parseError != nil {
-		return nil, parseError
-	}
-
-	return questionsAndAnswers, nil
+	return parseQuizData(file)
 }
 
-// parseCSVFile reads a CSV file and populates a provided map with questions and answers.
-//
-// Parameters:
-// - file: A pointer to an os.File representing the open CSV file to be read.
-// - quizQA: A map[string]string where the questions and answers will be stored.
-//
-// Returns:
-//   - An error if there was any issue reading the CSV file. If the end of the file is reached,
-//     or if individual records have errors (which are logged), the function will not return an error.
-//
-// Logging:
-// - The function logs a message when the end of the file is reached.
-// - It logs errors encountered while reading records but continues processing the remaining records.
-// - It logs invalid records (those with fewer than two fields) and continues processing.
-func parseCSVFile(file *os.File, quizQA map[string]string) error {
+// parseQuizData parses the CSV file and returns the quiz data.
+func parseQuizData(file *os.File) (map[string]string, error) {
+	quiz := make(map[string]string)
+
 	r := csv.NewReader(file)
+	quizData, err := r.ReadAll()
+	if err != nil {
+		return nil, err
+	}
 
-	for {
-		record, err := r.Read()
-
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Printf("Error reading record: %v", err)
-			continue
-		}
+	for _, record := range quizData {
 		if len(record) < 2 {
 			log.Printf("Invalid record (less than two fields): %v", record)
 			continue
 		}
-		quizQA[strings.TrimSpace(record[0])] = strings.TrimSpace(record[1])
+		q := strings.ToLower(strings.TrimSpace(record[0]))
+		a := strings.ToLower(strings.TrimSpace(record[1]))
+		quiz[q] = a
 	}
-	return nil
-}
 
-func runQuiz(quizQA map[string]string) {
-	var userResponse User
-
-	userResponse.TotalQuestions = len(quizQA)
-
-	fmt.Print("Please enter your name: ")
-	fmt.Scanln(&userResponse.UserName)
-
-	questionNumber := 1
-	for question, answer := range quizQA {
-		fmt.Println()
-		fmt.Printf("Question %d: %s\n", questionNumber, question)
-		questionNumber++
-
-		var userAnswer string
-		fmt.Print("Your answer: ")
-		fmt.Scanln(&userAnswer)
-
-		if strings.TrimSpace(userAnswer) == answer {
-			fmt.Println("Correct!")
-			userResponse.CorrectAnswers++
-		} else {
-			fmt.Println("Incorrect!")
-			userResponse.IncorrectAnswers++
-		}
-		fmt.Println()
-	}
-	userResponse.calculatePercentage()
-	userResponse.printResults()
+	return quiz, nil
 }
 
 func main() {
-
-	quizQA, err := processQuestionsAndAnswers("questions.csv")
+	quizData, err := processQuizData("questions.csv")
 	if err != nil {
-		log.Fatal("Error processing questions and answers: ", err)
+		log.Fatalf("Error processing quiz data: %v", err)
 	}
-	if len(quizQA) <= 0 {
-		log.Fatal("No questions found in the quiz. Exiting...")
-	}
-	runQuiz(quizQA)
+
+	quiz := Quiz{Questions: quizData}
+	quiz.run()
 }
