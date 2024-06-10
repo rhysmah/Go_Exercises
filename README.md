@@ -4,9 +4,4 @@
 
 This exercise is based on Exercise #1: Quiz Game on the [gophercises website](https://github.com/gophercises/quiz).
 
-This program will read a CSV file containing quiz questions and answers and save them. It will ask the user these questions in a terminal, tracking the questions the user got right or wrong, the display their results at the end:
-
-- Total number of questions
-- Number of correct answers
-- Number of incorrect answers
-- Percentage correct
+This is a simple quiz game that reads questions and answers from a CSV file, then, in the terminal, asks the user to answer them. The game keeps track of the number of correct answers and prints the final score at the end.
