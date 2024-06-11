@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/csv"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -105,27 +104,19 @@ func parseQuizData(file *os.File) (map[string]string, error) {
 }
 
 func main() {
-
-	quizTime := flag.Int("time", 30, "Time limit for the quiz (seconds)")
-	flag.Parse()
-
 	quizData, err := processQuizData("questions.csv")
 	if err != nil {
 		log.Fatalf("Error processing quiz data: %v", err)
 	}
 
-	fmt.Println("\n#########################")
 	fmt.Println("Welcome to the Quiz Game!")
-	fmt.Println("#########################")
-	fmt.Printf("You have %d seconds to complete the quiz.\n", *quizTime)
+	fmt.Println("You have 30 seconds to complete the quiz.")
 	fmt.Println("Press ENTER to start.")
 	fmt.Scanln()
 
 	// Auotmatically creates a new goroutine to run the quiz
 	// When the time expires, a signal is sent to the channel
-
-	timer := time.NewTimer(time.Duration(*quizTime) * time.Second)
-
+	timer := time.NewTimer(30 * time.Second)
 	quiz := Quiz{Questions: quizData}
 	quiz.run(timer)
 }
