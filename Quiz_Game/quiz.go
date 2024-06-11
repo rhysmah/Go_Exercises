@@ -35,25 +35,29 @@ func (q *Quiz) run(quizTime *time.Timer) {
 	q.TotalQuestions = len(q.Questions)
 	q.QuestionNumber = 1
 
+	answerChannel := make(chan string)
+
 	for question, answer := range q.Questions {
+
+		fmt.Printf("Question %d: %s\n", q.QuestionNumber, question)
+		q.QuestionNumber++
+
+		// Create a goroutine that's invoked and immmediately
+		// starts listening for the user's input
+		go func() {
+			fmt.Print("Your answer: ")
+			fmt.Scanln(&q.UserAnswer)
+			answerChannel <- q.UserAnswer
+		}()
 
 		select {
 		case <-quizTime.C:
 			fmt.Println("Time's up!")
-			fmt.Printf("You answered %d out of %d questions correctly.\n",
-				q.CorrectAnswers,
-				q.TotalQuestions,
-			)
+			fmt.Printf("You answered %d out of %d questions correctly.\n", q.CorrectAnswers, q.TotalQuestions)
 			return
 
-		default:
-			fmt.Printf("Question %d: %s\n", q.QuestionNumber, question)
-			q.QuestionNumber++
-
-			fmt.Print("Your answer: ")
-			fmt.Scanln(&q.UserAnswer)
-
-			isCorrect, response := q.checkAnswer(answer, q.UserAnswer)
+		case userAnswer := <-answerChannel:
+			isCorrect, response := q.checkAnswer(answer, userAnswer)
 			fmt.Printf("%s\n\n", response)
 			if isCorrect {
 				q.CorrectAnswers++
