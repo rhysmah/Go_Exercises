@@ -52,7 +52,7 @@ func (q *Quiz) run(quizTime *time.Timer) {
 
 		select {
 		case <-quizTime.C:
-			fmt.Println("Time's up!")
+			fmt.Println("\n\nTime's up!")
 			fmt.Printf("You answered %d out of %d questions correctly.\n", q.CorrectAnswers, q.TotalQuestions)
 			return
 
@@ -117,7 +117,7 @@ func main() {
 
 	// Auotmatically creates a new goroutine to run the quiz
 	// When the time expires, a signal is sent to the channel
-	timer := time.NewTimer(30 * time.Second)
+	timer := time.NewTimer(5 * time.Second)
 
 	quiz := Quiz{Questions: quizData}
 	quiz.run(timer)
