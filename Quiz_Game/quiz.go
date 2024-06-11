@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type Quiz struct {
@@ -25,7 +26,7 @@ func (q *Quiz) checkAnswer(question string, answer string) (bool, string) {
 }
 
 // run executes the quiz, asking each question and checking answers.
-func (q *Quiz) run() {
+func (q *Quiz) run(quizTime *time.Timer) {
 	if len(q.Questions) == 0 {
 		fmt.Println("No questions found in quiz data.")
 		return
@@ -34,22 +35,39 @@ func (q *Quiz) run() {
 	q.TotalQuestions = len(q.Questions)
 	q.QuestionNumber = 1
 
+	answerChannel := make(chan string)
+
 	for question, answer := range q.Questions {
+
 		fmt.Printf("Question %d: %s\n", q.QuestionNumber, question)
 		q.QuestionNumber++
 
-		fmt.Print("Your answer: ")
-		fmt.Scanln(&q.UserAnswer)
+		// Create a goroutine that's invoked and immmediately
+		// starts listening for the user's input
+		go func() {
+			fmt.Print("Your answer: ")
+			fmt.Scanln(&q.UserAnswer)
+			answerChannel <- q.UserAnswer
+		}()
 
-		isCorrect, response := q.checkAnswer(answer, q.UserAnswer)
-		fmt.Printf("%s\n\n", response)
-		if isCorrect {
-			q.CorrectAnswers++
+		select {
+		case <-quizTime.C:
+			fmt.Println("Time's up!")
+			fmt.Printf("You answered %d out of %d questions correctly.\n", q.CorrectAnswers, q.TotalQuestions)
+			return
+
+		case userAnswer := <-answerChannel:
+			isCorrect, response := q.checkAnswer(answer, userAnswer)
+			fmt.Printf("%s\n\n", response)
+			if isCorrect {
+				q.CorrectAnswers++
+			}
 		}
 	}
 	fmt.Printf("You answered %d out of %d questions correctly.\n",
 		q.CorrectAnswers,
-		q.TotalQuestions)
+		q.TotalQuestions,
+	)
 }
 
 // processQuizData reads the quiz data from a CSV file.
@@ -92,6 +110,15 @@ func main() {
 		log.Fatalf("Error processing quiz data: %v", err)
 	}
 
+	fmt.Println("Welcome to the Quiz Game!")
+	fmt.Println("You have 30 seconds to complete the quiz.")
+	fmt.Println("Press ENTER to start.")
+	fmt.Scanln()
+
+	// Auotmatically creates a new goroutine to run the quiz
+	// When the time expires, a signal is sent to the channel
+	timer := time.NewTimer(30 * time.Second)
+
 	quiz := Quiz{Questions: quizData}
-	quiz.run()
+	quiz.run(timer)
 }
