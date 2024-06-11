@@ -42,8 +42,7 @@ func (q *Quiz) run(quizTime *time.Timer) {
 		fmt.Printf("Question %d: %s\n", q.QuestionNumber, question)
 		q.QuestionNumber++
 
-		// Create a goroutine that's invoked and immmediately
-		// starts listening for the user's input
+		// Create goroutine; immediately start listening for user input
 		go func() {
 			fmt.Print("Your answer: ")
 			fmt.Scanln(&q.UserAnswer)
