@@ -116,7 +116,7 @@ func main() {
 
 	// Auotmatically creates a new goroutine to run the quiz
 	// When the time expires, a signal is sent to the channel
-	timer := time.NewTimer(5 * time.Second)
+	timer := time.NewTimer(30 * time.Second)
 
 	quiz := Quiz{Questions: quizData}
 	quiz.run(timer)
