@@ -2,23 +2,22 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"url_shortener/urlshort"
 )
 
 func main() {
 
-	yamlData := `
-- path: /urlshort
-  url: https://github.com/gophercises/urlshort
-- path: /urlshort-final
-  url: https://github.com/gophercises/urlshort/tree/solution
-`
-
+	// Map of paths to URLs; this can be converted to a JSON file,
+	// which will require additional functions in `handler.go`
 	pathsToUrls := map[string]string{
 		"/dog": "www.samplesite.com/article-on-dogs",
 		"/cat": "www.samplesite.com/article-on-cats",
 	}
+
+	yamlData := loadYAMLData("data.yaml")
 
 	// Create multiplexer; this is the default
 	mux := defaultMux()
@@ -38,6 +37,21 @@ func main() {
 
 	fmt.Println("Start server on :8080")
 	http.ListenAndServe(":8080", yamlHandler)
+}
+
+func loadYAMLData(filename string) []byte {
+	data, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer data.Close()
+
+	yamlData, dataErr := io.ReadAll(data)
+	if dataErr != nil {
+		panic(dataErr)
+	}
+
+	return yamlData
 }
 
 // defaultMux returns a ServeMux with a default handler
