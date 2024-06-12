@@ -12,10 +12,10 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// Extract the URL from the request
+		// Extract URL from request
 		requestedURL := r.URL.Path
 
-		// Check if the requestedURL is in map
+		// Check if requestedURL in map
 		if url, ok := pathsToUrls[requestedURL]; ok {
 			http.Redirect(w, r, url, http.StatusFound)
 		}
