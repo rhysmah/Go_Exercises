@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"url_shortener/urlshort"
 )
@@ -14,8 +13,6 @@ func main() {
 - path: /urlshort-final
   url: https://github.com/gophercises/urlshort/tree/solution
 `
-
-	fmt.Println("Hello, world")
 
 	pathsToUrls := map[string]string{
 		"/dog": "www.samplesite.com/article-on-dogs",
