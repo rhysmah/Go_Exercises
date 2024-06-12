@@ -15,12 +15,6 @@ func main() {
   url: https://github.com/gophercises/urlshort/tree/solution
 `
 
-	data, err := urlshort.ParseYAML([]byte(yaml))
-	if err != nil {
-		fmt.Println("ERROR: ", err)
-	}
-	fmt.Println(data)
-
 	fmt.Println("Hello, world")
 
 	pathsToUrls := map[string]string{

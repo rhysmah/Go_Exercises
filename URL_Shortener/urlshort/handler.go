@@ -31,15 +31,38 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 }
 
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
+	parsedData, err := parseYAML(yml)
+	if err != nil {
+		return nil, err
+	}
+	mappedData := buildURLMap(parsedData)
 
-	return nil, nil
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		if dest, ok := mappedData[path]; ok {
+			http.Redirect(w, r, dest, http.StatusFound)
+			return
+		}
+		fallback.ServeHTTP(w, r)
+	}, nil
 }
 
-func ParseYAML(yml []byte) ([]PathURL, error) {
+func parseYAML(yml []byte) ([]PathURL, error) {
 	var yamlData []PathURL
 	err := yaml.Unmarshal(yml, &yamlData)
 	if err != nil {
 		return nil, fmt.Errorf("cannot unmarshal YAML data: %v", err)
 	}
 	return yamlData, nil
+}
+
+func buildURLMap(parsedYAML []PathURL) map[string]string {
+	pathsToURLS := make(map[string]string)
+
+	// Iterate over the slice of PathURL and populate map
+	// Ignore the index; unpack the struct data
+	for _, pathURL := range parsedYAML {
+		pathsToURLS[pathURL.Path] = pathURL.URL
+	}
+	return pathsToURLS
 }
