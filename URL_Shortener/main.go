@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,9 @@ import (
 
 func main() {
 
+	yamlFileName := flag.String("yaml", "data.yaml", "YAML file with path: url data")
+	flag.Parse()
+
 	// Map of paths to URLs; this can be converted to a JSON file,
 	// which will require additional functions in `handler.go`
 	pathsToUrls := map[string]string{
@@ -17,7 +21,10 @@ func main() {
 		"/cat": "www.samplesite.com/article-on-cats",
 	}
 
-	yamlData := loadYAMLData("data.yaml")
+	yamlData, err := loadYAMLData(*yamlFileName)
+	if err != nil {
+		panic(err)
+	}
 
 	// Create multiplexer; this is the default
 	mux := defaultMux()
@@ -39,19 +46,19 @@ func main() {
 	http.ListenAndServe(":8080", yamlHandler)
 }
 
-func loadYAMLData(filename string) []byte {
+func loadYAMLData(filename string) ([]byte, error) {
 	data, err := os.Open(filename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer data.Close()
 
 	yamlData, dataErr := io.ReadAll(data)
 	if dataErr != nil {
-		panic(dataErr)
+		return nil, err
 	}
 
-	return yamlData
+	return yamlData, nil
 }
 
 // defaultMux returns a ServeMux with a default handler
