@@ -47,6 +47,7 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	}, nil
 }
 
+// Helper function: unmarshals YAML data into a struct slice
 func parseYAML(yml []byte) ([]PathURL, error) {
 	var yamlData []PathURL
 	err := yaml.Unmarshal(yml, &yamlData)
@@ -56,6 +57,7 @@ func parseYAML(yml []byte) ([]PathURL, error) {
 	return yamlData, nil
 }
 
+// Helpre function: builds a map of paths and URLs from a struct slice
 func buildURLMap(parsedYAML []PathURL) map[string]string {
 	pathsToURLS := make(map[string]string)
 
