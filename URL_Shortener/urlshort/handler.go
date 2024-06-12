@@ -36,15 +36,7 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 		return nil, err
 	}
 	mappedData := buildURLMap(parsedData)
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		if dest, ok := mappedData[path]; ok {
-			http.Redirect(w, r, dest, http.StatusFound)
-			return
-		}
-		fallback.ServeHTTP(w, r)
-	}, nil
+	return MapHandler(mappedData, fallback), nil
 }
 
 // Helper function: unmarshals YAML data into a struct slice
@@ -61,8 +53,7 @@ func parseYAML(yml []byte) ([]PathURL, error) {
 func buildURLMap(parsedYAML []PathURL) map[string]string {
 	pathsToURLS := make(map[string]string)
 
-	// Iterate over the slice of PathURL and populate map
-	// Ignore the index; unpack the struct data
+	// Iterate over the slice of PathURL and populate map with path: url
 	for _, pathURL := range parsedYAML {
 		pathsToURLS[pathURL.Path] = pathURL.URL
 	}
