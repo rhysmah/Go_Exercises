@@ -1,14 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"url_shortener/urlshort"
 )
 
 func main() {
 
-	fmt.Println("Hello, world")
+	yaml := `
+- path: /urlshort
+  url: https://github.com/gophercises/urlshort
+- path: /urlshort-final
+  url: https://github.com/gophercises/urlshort/tree/solution
+`
 
 	pathsToUrls := map[string]string{
 		"/dog": "www.samplesite.com/article-on-dogs",
