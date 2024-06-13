@@ -7,61 +7,71 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"url_shortener/urlshort"
 )
 
 func main() {
 
-	yamlFileName := flag.String("yaml", "data.yaml", "YAML file with path: url data")
+	filename := flag.String("file", "data.yaml", "YAML or JSON file with `path: url` data")
 	flag.Parse()
 
-	// Map of paths to URLs; this can be converted to a JSON file,
-	// which will require additional functions in `handler.go`
-	pathsToUrls := map[string]string{
-		"/dog": "http://www.samplesite.com/article-on-dogs",
-		"/cat": "http://www.samplesite.com/article-on-cats",
-	}
-
-	yamlData, err := loadYAMLData(*yamlFileName)
+	data, fileExt, err := loadData(*filename)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to load data:", err)
 	}
 
-	// Create multiplexer; this is the default
+	// Instantiate the default multiplexer
 	mux := defaultMux()
 
-	// Create the MapHandler; if there are no URLs that match
-	// what's stored in the map, it will default to `mux`
-	mapHandler := urlshort.MapHandler(pathsToUrls, mux)
+	// Create the map handler with no initial mappings
+	mapHandler := urlshort.MapHandler(nil, mux)
 
-	// Create the yamlHandler; if this causes an error, the
-	// program will panic. If there are URLs that match those
-	// stored in YAML, it will call those. Else, it will
-	// default to the mapHandler
-	yamlHandler, err := urlshort.YAMLHandler(yamlData, mapHandler)
+	// Determine the handler based on file extenstion type
+	var handler http.Handler
+	switch fileExt {
+	case "yaml":
+		handler, err = urlshort.YAMLHandler(data, mapHandler)
+	case "json":
+		handler, err = urlshort.JSONHandler(data, mapHandler)
+	default:
+		log.Fatal("unsupported file extension")
+	}
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to create handler: ", err)
 	}
 
 	fmt.Println("Start server on :8080")
-	http.ListenAndServe(":8080", yamlHandler)
+	http.ListenAndServe(":8080", handler)
 }
 
-func loadYAMLData(filename string) ([]byte, error) {
-	data, err := os.Open(filename)
+func loadData(filename string) ([]byte, string, error) {
+	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, "", fmt.Errorf("failed to open file: %w", err)
 	}
 	log.Print("Successfully opened file: ", filename)
-	defer data.Close()
+	defer file.Close()
 
-	yamlData, dataErr := io.ReadAll(data)
-	if dataErr != nil {
-		return nil, err
+	// Read and store the file extension
+	filePathExt := filepath.Ext(filename)
+	var fileExt string
+	if filePathExt == ".yaml" || filePathExt == ".yml" {
+		fileExt = "yaml"
+	} else if filePathExt == ".json" {
+		fileExt = "json"
+	} else {
+		return nil, "", fmt.Errorf("unsupported file extension: %s", filePathExt)
+	}
+
+	// Read content of file
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, "", err
 	}
 	log.Print("Successfully read data from file: ", filename)
 
-	return yamlData, nil
+	return content, fileExt, nil
 }
 
 // defaultMux returns a ServeMux with a default handler
