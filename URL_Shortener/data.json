@@ -1,0 +1,14 @@
+[
+  {
+    "path": "/google",
+    "url": "https://www.google.com"
+  },
+  {
+    "path": "/github",
+    "url": "https://www.github.com"
+  },
+  {
+    "path": "/stackoverflow",
+    "url": "https://stackoverflow.com"
+  }
+]
