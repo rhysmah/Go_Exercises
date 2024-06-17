@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+// storyHandler reads the JSON file containing the story data, parses it, and writes it to the response body.
+// If there is an error reading the file, the error is written to the response body and the function returns.
 func storyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Attempt to read the file containing the story; if error, write
@@ -35,6 +37,7 @@ func storyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// StartServer starts the server on port 8080 and listens for requests to the /story endpoint.
 func StartServer() {
 	http.HandleFunc("/story", storyHandler)
 	log.Println("Starting server on :8080")
