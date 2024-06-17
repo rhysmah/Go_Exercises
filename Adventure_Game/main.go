@@ -13,12 +13,12 @@ type StoryData struct {
 }
 
 type StoryArc struct {
-	Title   string         `json:"title"`
-	Story   []string       `json:"story"`
-	Options []StoryOptions `json:"options"`
+	Title   string        `json:"title"`
+	Story   []string      `json:"story"`
+	Options []StoryOption `json:"options"`
 }
 
-type StoryOptions struct {
+type StoryOption struct {
 	Text string `json:"text"`
 	Arc  string `json:"arc"`
 }
@@ -35,13 +35,13 @@ func readFile(fileName string) ([]byte, error) {
 	defer file.Close()
 
 	// Read file
-	contentAsBytes, err := io.ReadAll(file)
+	contentAsByteSlice, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Println("Successfully read data from file:", fileName)
-	return contentAsBytes, nil
+	return contentAsByteSlice, nil
 }
 
 func parseJSON(jsn []byte) (StoryData, error) {
@@ -60,12 +60,12 @@ func parseJSON(jsn []byte) (StoryData, error) {
 func main() {
 	content, err := readFile("gopher.json")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error reading file: ", err)
 	}
 
 	storyData, err := parseJSON(content)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error parsing JSON data: ", err)
 	}
 
 	fmt.Println(storyData)
