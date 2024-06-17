@@ -11,6 +11,7 @@ import (
 	"url_shortener/urlshort"
 )
 
+// Runs the program
 func main() {
 
 	filename := flag.String("file", "data.yaml", "YAML or JSON file with `path: url` data")
@@ -41,11 +42,16 @@ func main() {
 		log.Fatal("Failed to create handler: ", err)
 	}
 
-	fmt.Println("Start server on :8080")
+	fmt.Println("Server started on :8080")
 	http.ListenAndServe(":8080", handler)
 }
 
+// loadData attempts to open `filename`; if successful, it will
+// also read and sabe the file extension and contents of the file.
+// It no errors, it returns the file contents and extension.
 func loadData(filename string) ([]byte, string, error) {
+
+	// Attempt to open the file
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to open file: %w", err)
@@ -64,7 +70,7 @@ func loadData(filename string) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("unsupported file extension: %s", filePathExt)
 	}
 
-	// Read content of file
+	// Read and store file contents
 	content, err := io.ReadAll(file)
 	if err != nil {
 		return nil, "", err

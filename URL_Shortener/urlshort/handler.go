@@ -14,10 +14,10 @@ type PathURL struct {
 	URL  string `yaml:"url" json:"url"`
 }
 
-// MapHandler is a function that's called whenever the server receives a request.
+// MapHandler is called whenever the server receives a request.
 // The MapHandler is a closure; it has access to request details (http.Request).
-// It extracts the URL from this request and checks if it's in the map; if it is,
-// it redirects to corresponding URL; if not, it will fallback to fallback handler.
+// It extracts the URL from this request and checks if it's in the map. If it is,
+// it redirects to the corresponding URL, else it calls the fallback handler.
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -32,6 +32,7 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 	}
 }
 
+// Extracts parsed data from YAML file and builds `path: URL` map
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	parsedData, err := parseYAML(yml)
 	if err != nil {
@@ -41,6 +42,7 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	return MapHandler(mappedData, fallback), nil
 }
 
+// Extracts parsed data from JSON file and builds `path: URL` map
 func JSONHandler(jsn []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	parsedData, err := parseJSON(jsn)
 	if err != nil {
@@ -60,7 +62,7 @@ func parseYAML(yml []byte) ([]PathURL, error) {
 	return yamlData, nil
 }
 
-// Helper functino: unmarshals JSON data into a struct slice
+// Helper function: unmarshals JSON data into a struct slice
 func parseJSON(jsn []byte) ([]PathURL, error) {
 	var jsonData []PathURL
 	err := json.Unmarshal(jsn, &jsonData)
@@ -74,7 +76,7 @@ func parseJSON(jsn []byte) ([]PathURL, error) {
 func buildURLMap(parsedData []PathURL) map[string]string {
 	pathsToURLS := make(map[string]string)
 
-	// Iterate over the slice of PathURL and populate map with path: url
+	// Iterate over slice of PathURL and populate map with `path: url`
 	for _, pathURL := range parsedData {
 		pathsToURLS[pathURL.Path] = pathURL.URL
 	}
