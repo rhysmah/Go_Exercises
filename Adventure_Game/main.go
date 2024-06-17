@@ -1,69 +1,18 @@
 package main
 
 import (
-	"encoding/json"
+	"adventure/jsonhandler"
 	"fmt"
-	"io"
 	"log"
-	"os"
 )
 
-type StoryData struct {
-	Story StoryArc `json:"intro"`
-}
-
-type StoryArc struct {
-	Title   string        `json:"title"`
-	Story   []string      `json:"story"`
-	Options []StoryOption `json:"options"`
-}
-
-type StoryOption struct {
-	Text string `json:"text"`
-	Arc  string `json:"arc"`
-}
-
-func readFile(fileName string) ([]byte, error) {
-
-	// Attempt to open file
-	file, err := os.Open(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Successfully opened file:", fileName)
-	defer file.Close()
-
-	// Read file
-	contentAsByteSlice, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Successfully read data from file:", fileName)
-	return contentAsByteSlice, nil
-}
-
-func parseJSON(jsn []byte) (StoryData, error) {
-	var jsonData StoryData
-	err := json.Unmarshal(jsn, &jsonData)
-
-	// If error, return empty struct
-	if err != nil {
-		return StoryData{}, fmt.Errorf("cannot unmarshal JSON: %v", err)
-	}
-
-	log.Println("Successfully parsed JSON data")
-	return jsonData, nil
-}
-
 func main() {
-	content, err := readFile("gopher.json")
+	content, err := jsonhandler.ReadFile("gopher.json")
 	if err != nil {
 		log.Fatal("Error reading file: ", err)
 	}
 
-	storyData, err := parseJSON(content)
+	storyData, err := jsonhandler.ParseJSON(content)
 	if err != nil {
 		log.Fatal("Error parsing JSON data: ", err)
 	}
