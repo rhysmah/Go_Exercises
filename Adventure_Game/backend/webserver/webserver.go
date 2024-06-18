@@ -30,6 +30,7 @@ func storyHandler(w http.ResponseWriter, r *http.Request) {
 	// Set the response header to JSON; encode data as JSON and write to response body.
 	// If error, write error to response body and return
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	err = json.NewEncoder(w).Encode(storyDataParsed)
 	if err != nil {
 		http.Error(w, "Error encoding JSON data", http.StatusInternalServerError)
