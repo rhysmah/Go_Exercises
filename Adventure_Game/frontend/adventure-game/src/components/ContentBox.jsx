@@ -14,7 +14,6 @@ const ContentBox = () => {
             if (!response.ok) {
                 throw new Error('Failed to fetch data')
             }
-            console.log(response.json())
             return response.json()
         })
         .then(data => setData(data))
@@ -31,7 +30,8 @@ const ContentBox = () => {
 
     return (
         <div className="content-box">
-            <h1>Content Box</h1>
+            <h1>{data.intro.title}</h1>
+            <p>{data.intro.story}</p>
         </div>
     )
 }
