@@ -1,10 +1,11 @@
+import React from 'react';
+import ContentBox from './components/ContentBox';
+
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          Provide content!
-        </p>
+        <ContentBox />
       </header>
     </div>
   );
