@@ -14,7 +14,6 @@ const ContentBox = () => {
         })
         .then(response => {
             setStoryData(response)        // Stores all story data
-            console.log(response)
             setCurrentArc(response.intro) // Stores intro arc
         })
         .catch(error => setError(error))
@@ -41,12 +40,7 @@ const ContentBox = () => {
                 <ul>
                     {options.map((option, index) => (
                         <li key={index}>
-                            <a href={option.link} 
-                            onClick={(e) => {
-                                e.preventDefault()
-                                setCurrentArc(storyData[option.arc])
-                            }
-                            }>
+                            <a href={option.link} onClick={() => setCurrentArc(storyData[option.arc])}>
                                 {option.text}
                             </a>
                         </li>
