@@ -8,9 +8,7 @@ import (
 	"os"
 )
 
-type StoryData struct {
-	Intro StoryArc `json:"intro"`
-}
+type StoryData map[string]StoryArc
 
 type StoryArc struct {
 	Title   string        `json:"title"`

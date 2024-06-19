@@ -1,43 +1,60 @@
 import React, {useEffect, useState} from 'react';
 
 const ContentBox = () => {
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
+    const [error, setError]           = useState(null);
+    const [storyData, setStoryData]   = useState(null);
+    const [currentArc, setCurrentArc] = useState(null);
+    
 
     useEffect( () => {
-        console.log("Component mounted. Fetching data...")
         fetch('http://localhost:8080/story')
         .then(response => {
-            if (!response.ok) {
-                setError('Failed to fetch data')
-            }
+            if (!response.ok) throw new Error("Failed to fetch data")
             return response.json()
         })
-        .then(data => setData(data))
+        .then(response => {
+            setStoryData(response)        // Stores all story data
+            console.log(response)
+            setCurrentArc(response.intro) // Stores intro arc
+        })
         .catch(error => setError(error))
-    })
+    }, []);
+
 
     if (error) return <p>Error: {error}</p>
-    if (!data) return <p>Loading...</p>
+    if (!storyData) return <p>Loading...</p>
+
+
+    const {title, story, options} = currentArc;
+
 
     return (
         <>
-            <div className="content-box">
-                <h1>{data.intro.title}</h1>
-                <p>{data.intro.story}</p>
+             <div className="content-box">
+                <h1>{title}</h1>
+                {story.map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                ))}
             </div>
 
             <div className="links-box">
                 <ul>
-                    {data.intro.options.map((option, index) => (
-                        <li key={index}><a href={option.link}>{option.text}</a></li>
+                    {options.map((option, index) => (
+                        <li key={index}>
+                            <a href={option.link} 
+                            onClick={(e) => {
+                                e.preventDefault()
+                                setCurrentArc(storyData[option.arc])
+                            }
+                            }>
+                                {option.text}
+                            </a>
+                        </li>
                     ))}
                 </ul>
             </div>
-
         </>
     )
 }
-
 
 export default ContentBox;
