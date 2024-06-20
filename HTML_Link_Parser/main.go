@@ -24,18 +24,21 @@ func main() {
 			if tokenizer.Err() != io.EOF {
 				fmt.Println("Error parsing HTML: ", tokenizer.Err())
 			}
-			return
+			break
 		}
 
 		switch tokenType {
 		case html.StartTagToken:
 			tagName, _ := tokenizer.TagName()
+
+			// Looking specifically for the content of 'a' tags
 			if string(tagName) == "a" {
-				tagContent, err := readTagContent(tokenizer, string(tagName))
+				tagContent, err := readTagContent(tokenizer, "a")
 				if err != nil {
-					fmt.Println("Error: ", err)
+					fmt.Println("Error reading tag content: ", err)
+				} else {
+					fmt.Println("Content of <a> tag:", tagContent)
 				}
-				print(tagContent)
 			}
 		}
 	}
