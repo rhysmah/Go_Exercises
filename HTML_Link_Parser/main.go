@@ -8,9 +8,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-const aLinkToken = "a"
-const hrefToken = "href"
-
 type Link struct {
 	Href string
 	Link string
@@ -25,47 +22,74 @@ func main() {
 	r := strings.NewReader(htmlString)
 	tokenizer := html.NewTokenizer(r)
 
+	var documentLinks []Link
+
 	// Loop through HTML tokens
 	for {
 		tokenType := tokenizer.Next()
 
-		// ErrorToken can be a parsing error or EOF
+		// ErrorToken can be parsing error or EOF
 		if tokenType == html.ErrorToken {
 			if tokenizer.Err() != io.EOF {
 				fmt.Println("Error parsing HTML: ", tokenizer.Err())
 			}
-			break
+			break // EOF; break loop
 		}
 
-		// No error, no EOF; start parsing tokens
-
 		if tokenType == html.StartTagToken {
-			linkData := Link{}
-			tagName, hasAttribute := tokenizer.TagName()
+			tagName, hasAttr := tokenizer.TagName()
 
-			if string(tagName) == aLinkToken {
-
-				// Extract attribute
-				if hasAttribute {
-					attrName, attrContent, _ := tokenizer.TagAttr()
-					if string(attrName) == hrefToken {
-						linkData.Href = string(attrContent)
-					}
-				}
-
-				// Extract tag content
-				tagContent, err := readTagContent(tokenizer, "a")
+			if string(tagName) == "a" && hasAttr {
+				link, err := parseLink(tokenizer)
 				if err != nil {
-					fmt.Println("Error reading tag content: ", err)
-				} else {
-					linkData.Link = tagContent
+					fmt.Println(err)
+					continue
 				}
+				documentLinks = append(documentLinks, link)
 			}
 		}
 	}
+	fmt.Println(documentLinks)
 }
 
-func readTagContent(tokenizer *html.Tokenizer, tagName string) (string, error) {
+func parseLink(tokenizer *html.Tokenizer) (Link, error) {
+	link := Link{}
+
+	// (1) Extract href
+	hrefContent, err := extractHref(tokenizer)
+	if err != nil {
+		fmt.Println("ERROR: ", err)
+	}
+	link.Href = hrefContent
+
+	// (2) Extract Tag Content
+	tagContent, err := extractTagContent(tokenizer, "a")
+	if err != nil {
+		fmt.Println("Error reading tag content: ", err)
+	}
+	link.Link = tagContent
+
+	return link, nil
+}
+
+func extractHref(tokenizer *html.Tokenizer) (string, error) {
+
+	for {
+		attrName, attrContent, moreAttr := tokenizer.TagAttr()
+		if string(attrName) == "href" {
+			return string(attrContent), nil
+		}
+
+		// If no `href`, end infinite loop
+		if !moreAttr {
+			break
+		}
+	}
+
+	return "", nil
+}
+
+func extractTagContent(tokenizer *html.Tokenizer, tagName string) (string, error) {
 	var tagContent strings.Builder
 
 	for {
