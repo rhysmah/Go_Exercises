@@ -8,18 +8,28 @@ import (
 	"golang.org/x/net/html"
 )
 
+const aLinkToken = "a"
+const hrefToken = "href"
+
+type Link struct {
+	Href string
+	Link string
+}
+
 func main() {
 
 	htmlString := `<html><body><h1>Hello!</h1><a href="/other-page">A link to another page</a></body></html>`
 
-	// Creates a new reader for strings; this implements the io.Reader
-	// interface; it allows us to treat the string as a stream of bytes
+	// Creates a new reader for strings; this implements io.Reader
+	// interface, allowing us to treat string as a stream of bytes
 	r := strings.NewReader(htmlString)
 	tokenizer := html.NewTokenizer(r)
 
+	// Loop through HTML tokens
 	for {
 		tokenType := tokenizer.Next()
 
+		// ErrorToken can be a parsing error or EOF
 		if tokenType == html.ErrorToken {
 			if tokenizer.Err() != io.EOF {
 				fmt.Println("Error parsing HTML: ", tokenizer.Err())
@@ -27,17 +37,28 @@ func main() {
 			break
 		}
 
-		switch tokenType {
-		case html.StartTagToken:
-			tagName, _ := tokenizer.TagName()
+		// No error, no EOF; start parsing tokens
 
-			// Looking specifically for the content of 'a' tags
-			if string(tagName) == "a" {
+		if tokenType == html.StartTagToken {
+			linkData := Link{}
+			tagName, hasAttribute := tokenizer.TagName()
+
+			if string(tagName) == aLinkToken {
+
+				// Extract attribute
+				if hasAttribute {
+					attrName, attrContent, _ := tokenizer.TagAttr()
+					if string(attrName) == hrefToken {
+						linkData.Href = string(attrContent)
+					}
+				}
+
+				// Extract tag content
 				tagContent, err := readTagContent(tokenizer, "a")
 				if err != nil {
 					fmt.Println("Error reading tag content: ", err)
 				} else {
-					fmt.Println("Content of <a> tag:", tagContent)
+					linkData.Link = tagContent
 				}
 			}
 		}
