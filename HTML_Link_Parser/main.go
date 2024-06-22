@@ -29,7 +29,7 @@ func main() {
 
 	documentLinks, err := parseHTML(tokenizer)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln("Error parsing HTML: ", err)
 	}
 
 	for _, content := range documentLinks {
@@ -49,8 +49,7 @@ func processFile(filename string) (string, error) {
 		return "", fmt.Errorf("failed to read html content: %v", err)
 	}
 
-	htmlContent := string(fileContent)
-	return htmlContent, nil
+	return string(fileContent), nil
 }
 
 func parseHTML(tokenizer *html.Tokenizer) ([]Link, error) {
@@ -60,7 +59,6 @@ func parseHTML(tokenizer *html.Tokenizer) ([]Link, error) {
 	for {
 		tokenType := tokenizer.Next()
 
-		// ErrorToken can be parsing error or EOF
 		if tokenType == html.ErrorToken {
 			if tokenizer.Err() != io.EOF {
 				return nil, tokenizer.Err()
@@ -74,7 +72,7 @@ func parseHTML(tokenizer *html.Tokenizer) ([]Link, error) {
 			if string(tagName) == "a" && hasAttr {
 				link, err := parseLink(tokenizer)
 				if err != nil {
-					fmt.Println(err)
+					log.Println("Error parsing link: ", err)
 					continue
 				}
 				documentLinks = append(documentLinks, link)
@@ -92,21 +90,20 @@ func parseLink(tokenizer *html.Tokenizer) (Link, error) {
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 	}
-	link.Href = hrefContent
 
 	// (2) Extract Tag Content
 	tagContent, err := extractTagContent(tokenizer, "a")
 	if err != nil {
 		fmt.Println("Error reading tag content: ", err)
 	}
-	link.Link = strings.ReplaceAll(tagContent, "\n", "")
-	link.Link = strings.Join(strings.Fields(tagContent), " ")
 
-	return link, nil
+	return Link{
+		Href: hrefContent,
+		Link: strings.TrimSpace(strings.Join(strings.Fields(tagContent), " ")),
+	}, nil
 }
 
 func extractHref(tokenizer *html.Tokenizer) (string, error) {
-
 	for {
 		attrName, attrContent, moreAttr := tokenizer.TagAttr()
 		if string(attrName) == "href" {
@@ -145,14 +142,6 @@ func extractTagContent(tokenizer *html.Tokenizer, tagName string) (string, error
 			if string(endTagName) == tagName {
 				return tagContent.String(), nil
 			}
-
-			// case html.StartTagToken:
-			// 	nestedTagName, _ := tokenizer.TagName()
-			// 	tagContent.WriteString(fmt.Sprintf("<%s>", string(nestedTagName)))
-
-			// case html.SelfClosingTagToken:
-			// 	selfClosingTagName, _ := tokenizer.TagName()
-			// 	tagContent.WriteString(fmt.Sprintf("<%s>", string(selfClosingTagName)))
 		}
 	}
 	return tagContent.String(), nil
