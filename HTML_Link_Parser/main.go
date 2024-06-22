@@ -22,6 +22,14 @@ func main() {
 	r := strings.NewReader(htmlString)
 	tokenizer := html.NewTokenizer(r)
 
+	documentLinks, err := parseHTML(tokenizer)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(documentLinks)
+}
+
+func parseHTML(tokenizer *html.Tokenizer) ([]Link, error) {
 	var documentLinks []Link
 
 	// Loop through HTML tokens
@@ -31,7 +39,7 @@ func main() {
 		// ErrorToken can be parsing error or EOF
 		if tokenType == html.ErrorToken {
 			if tokenizer.Err() != io.EOF {
-				fmt.Println("Error parsing HTML: ", tokenizer.Err())
+				return nil, tokenizer.Err()
 			}
 			break // EOF; break loop
 		}
@@ -49,7 +57,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(documentLinks)
+	return documentLinks, nil
 }
 
 func parseLink(tokenizer *html.Tokenizer) (Link, error) {
