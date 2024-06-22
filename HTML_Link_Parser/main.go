@@ -83,7 +83,6 @@ func parseHTML(tokenizer *html.Tokenizer) ([]Link, error) {
 }
 
 func parseLink(tokenizer *html.Tokenizer) (Link, error) {
-	link := Link{}
 
 	// (1) Extract href
 	hrefContent, err := extractHref(tokenizer)
